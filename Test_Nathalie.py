@@ -51,6 +51,7 @@ def create_pivot_table(df, status_filter, type_filter):
 # Function to get a formatted year range from a DataFrame
 def get_year_range(df):
     years = df['Effective Date'].dt.year.unique()
+    print(combined_data['Effective Date'].dt.year.unique())
     if len(years) > 1:
         return f"{min(years)}-{max(years)}"
     return str(years[0])
@@ -287,11 +288,15 @@ if uploaded_files and len(uploaded_files) == 2:
     # Calculate and append totals for each year range
     for year_range in year_ranges:
         year_data = combined_data[combined_data['Effective Date'].dt.strftime('%Y').isin(year_range.split('-'))]
+        # This should print out an array of unique years as integers
+        print(year_data['Effective Date'].dt.year.unique())  # Check if 2023 is included
+        year_counts = year_data['Effective Date'].dt.year.value_counts()
         year_pivot = create_pivot_table(year_data, status_options, type_options)
         combined_pivot_table[f'Total {year_range}'] = year_pivot.sum(axis=1)
 
     # Calculate and append the combined total
-    combined_pivot_table['Combined Total'] = combined_pivot_table.sum(axis=1)
+    #combined_pivot_table['Combined Total'] = combined_pivot_table.sum(axis=1)
+
 
 
 
@@ -302,8 +307,9 @@ if uploaded_files and len(uploaded_files) == 2:
     # Extract the most recent year and its data for the bar chart
     most_recent_year = combined_data['Effective Date'].dt.year.max()
     recent_year_data = combined_pivot_table[
-        [col for col in combined_pivot_table.columns if str(most_recent_year) in col and 'Total 2023' not in col]]
-    monthly_totals = recent_year_data.sum()
+        #for previous result[col for col in combined_pivot_table.columns if str(most_recent_year) in col and 'Total 2022' not in col]]
+        [col for col in combined_pivot_table.columns if 'Total' in col and col.startswith('Total')]]
+    monthly_totals = recent_year_data.sum().astype(int)
 
     # Create an interactive bar chart with Plotly
     st.write(f'Interactive Bar Chart for {most_recent_year}')
